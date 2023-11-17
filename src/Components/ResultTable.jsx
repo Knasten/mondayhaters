@@ -10,7 +10,6 @@ const ResultTable = () => {
   const [searchParams, setSearchParams] = useState('');
   const [itemComponents, setItemComponents] = useState([]);
 
-  console.log(data)
 
 
   const searchHandler = (event) => {
@@ -18,17 +17,28 @@ const ResultTable = () => {
   }
 
   useEffect(() => {
-    if(searchParams === ''){
-      return setItemComponents(data.filter(item => item.raid === selectedRaid).map(filteredItem => <Item id={filteredItem.id} key={filteredItem.id} />))
+    const timer = setTimeout(() => {
+      let itemComps = data.filter(item => item.raid === selectedRaid)
+      if(searchParams[0] === '@' && searchParams.slice(1)){
+        itemComps = itemComps.filter(item => item.droppedBy.toLowerCase().includes(searchParams.slice(1).toLowerCase()))
+      } else {
+        itemComps = itemComps.filter(item => item.raid === selectedRaid && item.name.toLowerCase().includes(searchParams.toLowerCase()))
+      }
+
+      setItemComponents(itemComps);
+    }, [300])
+
+    return () => {
+      window.clearTimeout(timer)
     }
-    setItemComponents(data.filter(item => item.raid === selectedRaid && item.name.toLowerCase().includes(searchParams.toLowerCase())).map(filteredItem => <Item id={filteredItem.id} key={filteredItem.id} />))
-  }, [searchParams, data, selectedRaid])
+
+}, [searchParams, data, selectedRaid])
 
   
   return (
-    <div className="flex flex-col overflow-scroll h-100">
+    <div className="flex flex-col overflow-scroll border border-white h-[85%] w-[33%] px-1 py-1">
       <input onChange={searchHandler} className="w-9/12 self-center" id="search-bar" type="text"/>
-        {itemComponents}
+        {itemComponents.map(i => <Item id={i.id} key={i.id} />)}
     </div>
   )
 };
