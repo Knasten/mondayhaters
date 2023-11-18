@@ -41,6 +41,23 @@ export const itemSlice = createSlice({
   }
 })
 
+export const fetchAndSessionStoreItems = (loggedIn, selectedRaid) => async (dispatch) => {
+  try {
+    if(loggedIn !== undefined && loggedIn){
+      const data = await fetch(process.env.REACT_APP_BACKEND_BASE + 'items?raid=' + selectedRaid, {
+        method: 'GET',
+        credentials: 'include'
+      });
+      console.log('JUST FETECHED ALOT OF DATA')
+      const itemsData = (await data.json()).message
+      sessionStorage.setItem(selectedRaid, JSON.stringify(itemsData))
+      dispatch(setItems(itemsData));
+    }
+  } catch (error) {
+
+  }
+};
+
 export const { setItems, setSelectedRaid, setReservation, resetReservation } = itemSlice.actions;
 
 export const { reservationList } = initialState

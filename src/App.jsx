@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 // Actions
-import { setItems } from './redux/item/itemSlice';
+import { fetchAndSessionStoreItems, setItems } from './redux/item/itemSlice';
 
 // Styling
 import './App.css';
@@ -32,24 +32,19 @@ const router = createBrowserRouter([
 function App() {
   const dispatch = useDispatch()
   const loggedIn = useSelector((state) => state.auth.loggedIn);
+  const selectedRaid = useSelector((state) => state.items.selectedRaid)
 
 
   useEffect(() => {
     dispatch(checkAuthentication());
-    
-    const fetchData = async () => {
-      if(loggedIn !== undefined && loggedIn){
-        const data = await fetch(process.env.REACT_APP_BACKEND_BASE + 'items', {
-          method: 'GET',
-          credentials: 'include'
-        });
-        const itemsData = (await data.json()).message
-        console.log(itemsData)
-        dispatch(setItems(itemsData))
-      }
+    if(!sessionStorage.getItem(selectedRaid)){
+      console.log('Did not find it in session')
+      dispatch(fetchAndSessionStoreItems(loggedIn, selectedRaid));
+    } else {
+      console.log('Found it in session!')
+      dispatch(setItems(JSON.parse(sessionStorage.getItem(selectedRaid))))
     }
-    fetchData()
-  }, [dispatch, loggedIn])
+  }, [dispatch, loggedIn, selectedRaid])
 
   return (
     <>

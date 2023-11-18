@@ -8,24 +8,44 @@ const ResultTable = () => {
   const selectedRaid = useSelector((state) => state.items.selectedRaid)
   
   const [searchParams, setSearchParams] = useState('');
-  const [itemComponents, setItemComponents] = useState([]);
+  const [currentItems, setCurrentItems] = useState([]);
 
 
 
   const searchHandler = (event) => {
-    setSearchParams(event.target.value)
+    const keyWords = String(event.target.value).toLowerCase()
+    setSearchParams(keyWords)
   }
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      let itemComps = data.filter(item => item.raid === selectedRaid)
-      if(searchParams[0] === '@' && searchParams.slice(1)){
-        itemComps = itemComps.filter(item => item.droppedBy.toLowerCase().includes(searchParams.slice(1).toLowerCase()))
-      } else {
-        itemComps = itemComps.filter(item => item.raid === selectedRaid && item.name.toLowerCase().includes(searchParams.toLowerCase()))
-      }
+      const itemsArr = Object.entries(data);
+      const expr = searchParams[0]
+      let items;
 
-      setItemComponents(itemComps);
+      switch(expr) {
+        case '@':
+          items = itemsArr.filter((item) => {
+            const acquisitionName = item[1].droppedBy.toLowerCase()
+            console.log(acquisitionName, searchParams.slice(1))
+            if(acquisitionName.includes(searchParams.slice(1))){
+              return true;
+            }
+            return false
+          })
+          break;
+
+        default:
+          items = itemsArr.filter((item) => {
+            const itemName = item[1].name.toLowerCase()
+            if(itemName.includes(searchParams)){
+              return true;
+            }
+            return false
+          })
+      }
+      setCurrentItems(items)
+
     }, [300])
 
     return () => {
@@ -34,11 +54,13 @@ const ResultTable = () => {
 
 }, [searchParams, data, selectedRaid])
 
+console.log(currentItems)
+
   
   return (
     <div className="flex flex-col overflow-scroll border border-white h-[85%] w-[33%] px-1 py-1">
       <input onChange={searchHandler} className="w-9/12 self-center" id="search-bar" type="text"/>
-        {itemComponents.map(i => <Item id={i.id} key={i.id} />)}
+        {currentItems.map(i => <Item id={i[0]} key={i[0]} />)}
     </div>
   )
 };
